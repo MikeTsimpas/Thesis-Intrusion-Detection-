@@ -1,0 +1,36 @@
+[project]
+name = "client_app"
+version = "1.0.0"
+description = ""
+license = "Apache-2.0"
+dependencies = {
+    "flwr[simulation]>=1.20.0",
+    "numpy>=2.0.2",
+}
+
+[tool.flwr.app]
+publisher = "Michail-Tsimpas-BarchelorThesis-Uth"
+
+[tool.flwr.app.components]
+serverapp = "server.server_app:app"
+clientapp = "client_app.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 3
+any-name-you-like = "any value supported by TOML"
+
+server_rounds = context.run_config["num-server-rounds"]
+
+[tool.flwr.federations]
+default = "your-federation-name"
+
+[tool.flwr.federations.your-federation-name]
+# Federation-specific options
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 10
+
+[tool.flwr.federations.remote-deployment]
+address = "<SUPERLINK-ADDRESS>:<PORT>"
+root-certificate = "path/to/root/cert.pem"  # Optional, for TLS
+# insecure = true  # Disable TLS (not recommended for production)

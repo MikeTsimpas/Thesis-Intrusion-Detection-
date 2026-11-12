@@ -1,0 +1,190 @@
+services:
+  zookeeper:
+    image: bitnamilegacy/zookeeper:latest
+    container_name: zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+
+  #---------------------------------------------- SERVER ----------------------------------------------
+  server:
+    container_name: server
+    build:
+      context: ./Communicator
+      dockerfile: Dockerfile.server
+    depends_on:
+      - kafka
+    ports:
+      - "5003:5000"
+  
+  #---------------------------------------------- KAFKA ----------------------------------------------
+  kafka:
+    image: bitnamilegacy/kafka:3.3.2
+    container_name: kafka
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_NUM_PARTITIONS=1
+      - KAFKA_CFG_KRAFT_MODE=false
+      - KAFKA_SERVER=kafka:9092
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+
+  #---------------------------------------------- DRONE 1 ----------------------------------------------
+  producer1:
+    build:
+      context: ./Producer
+      dockerfile: Dockerfile.producer
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone1
+      - DRONE_ID=drone-1
+    ports:
+      - "5001:5000"
+
+  client1:
+    build:
+      context: ./Communicator
+      dockerfile: Dockerfile.client
+    depends_on:
+      - kafka
+      - server
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone1
+      - FLOWER_SERVER=server:5000
+      - CLIENT_ID=1
+      - KAFKA_GROUP=drone1_group
+
+  #---------------------------------------------- DRONE 2 ----------------------------------------------
+
+  producer2:
+    build:
+      context: ./Producer
+      dockerfile: Dockerfile.producer
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone2
+      - DRONE_ID=drone-2
+
+  client2:
+    build:
+      context: ./Communicator
+      dockerfile: Dockerfile.client
+    depends_on:
+      - kafka
+      - server
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone2
+      - FLOWER_SERVER=server:5000
+      - CLIENT_ID=2
+      - KAFKA_GROUP=drone2_group
+
+  #---------------------------------------------- DRONE 3 ----------------------------------------------
+
+  producer3:
+    build:
+      context: ./Producer
+      dockerfile: Dockerfile.producer
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone3
+      - DRONE_ID=drone-3
+
+  client3:
+    build:
+      context: ./Communicator
+      dockerfile: Dockerfile.client
+    depends_on:
+      - kafka
+      - server
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone3
+      - FLOWER_SERVER=server:5000
+      - CLIENT_ID=3
+      - KAFKA_GROUP=drone3_group
+
+  #---------------------------------------------- DRONE 4 ----------------------------------------------
+
+  producer4:
+    build:
+      context: ./Producer
+      dockerfile: Dockerfile.producer
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone4
+      - DRONE_ID=drone-4
+
+  client4:
+    build:
+      context: ./Communicator
+      dockerfile: Dockerfile.client
+    depends_on:
+      - kafka
+      - server
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone4
+      - FLOWER_SERVER=server:5000
+      - CLIENT_ID=4
+      - KAFKA_GROUP=drone4_group
+
+  #---------------------------------------------- DRONE 5 ----------------------------------------------
+
+  producer5:
+    build:
+      context: ./Producer
+      dockerfile: Dockerfile.producer
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone5
+      - DRONE_ID=drone-5
+
+  client5:
+    build:
+      context: ./Communicator
+      dockerfile: Dockerfile.client
+    depends_on:
+      - kafka
+      - server
+    environment:
+      - KAFKA_SERVER=kafka:9092
+      - KAFKA_TOPIC=sensor_data_drone5
+      - FLOWER_SERVER=server:5000
+      - CLIENT_ID=5
+      - KAFKA_GROUP=drone5_group
+
+
+  
+
+#  intrusion_detection:
+#    build:
+#      context: ./IntrusionDetection
+#      dockerfile: Dockerfile.idm
+#    depends_on:                   #
+#      - kafka                     # Dika moy, leitourgei kai xoris afta
+#      - zookeeper                 #
+#    environment:                  #
+#      - KAFKA_SERVER=kafka:9092   #
+#    command: python idsv12.py     #
+#    ports:
+#      - "5002:5000"  # Adjust if needed

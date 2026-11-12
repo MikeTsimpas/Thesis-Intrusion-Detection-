@@ -1,0 +1,28 @@
+# Use an official Python runtime as a base image
+FROM python:3.8
+
+#Install build dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    librdkafka-dev \
+    pkg-config \
+    libssl-dev
+
+# Set working directory
+WORKDIR /app
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install necessary dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the Kafka producer script to the container
+COPY kafka_producer.py ./
+
+# Expose the necessary port (if required for the Kafka producer)
+EXPOSE 9092
+
+# Command to run the Kafka producer
+CMD ["python", "kafka_producer.py"]
